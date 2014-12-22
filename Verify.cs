@@ -56,7 +56,7 @@
 
                 if(email.IndexOf("live.net") > -1)
                 {
-                    email = email.Replace("live.net", "live.net");
+                    email = email.Replace("live.net", "live.com");
                 }
 
                 if(email.IndexOf(".com.com") > -1)
