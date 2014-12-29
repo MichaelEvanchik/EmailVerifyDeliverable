@@ -32,85 +32,93 @@
 
         }
 
-        //for test button, any changes here or vice versa should be made
-        public string Verify(string sEmail)
+         public void Verify(DataSet semails)
         {
-
             string email = "";
+            int keyfield = 0;
             string sSuffix = "";
             string domain = "";
             string user = "";
             string suffix = "";
-            string irulecode = "0";
-            string inewemail = "";
-            string isupressionID = "0";
+            int i = 0;
 
-            bool validsuffix = false;
-            #region suffix_validation
+            DataTable retDT = new DataTable();
+            retDT = semails.Tables[0];
 
-            ///////////////////////////////////////////////////////////////////////////////
-            email = sEmail.Replace(" ", "").ToLower();
-            string tsuffix = "";
-            while (true)
+
+
+
+            foreach (DataRow sEmail in retDT.Rows)
             {
+                while (true)
+                {
+                    string stempEmail = "";
+                    bool validsuffix = false;
+                    #region suffix_validation           
+                    ///////////////////////////////////////////////////////////////////////////////
+                    email = sEmail[1].ToString().Replace(" ", "").ToLower();
+                    stempEmail = email;
+                    keyfield = Convert.ToInt32(sEmail[0].ToString());
+                    string tsuffix = "";
 
-                if(email.IndexOf("live.net") > -1)
-                {
-                    email = email.Replace("live.net", "live.com");
-                }
+                    if (email.IndexOf("live.net") > -1)
+                    {
+                        email = email.Replace("live.net", "live.com");
+                    }
 
-                if(email.IndexOf(".com.com") > -1)
-                {
-                    email = email.Replace(".com.com", ".com");
-                }
+                    if (email.IndexOf(".com.com") > -1)
+                    {
+                        email = email.Replace(".com.com", ".com");
+                    }
 
-                if(email.IndexOf(".com.net") > -1)
-                {
-                    email = email.Replace(".com.net", ".net");
-                }
-                
-
-                if (email.IndexOf("gmailcom") > -1)
-                {
-                    email = email.Replace("gmailcom", "gmail.com");
-                }
-                if (email.IndexOf("yahoocom") > -1)
-                {
-                    email = email.Replace("yahoocom", "yahoo.com");
-                }
-                if (email.IndexOf("hotmailcom") > -1)
-                {
-                    email = email.Replace("hotmailcom", "hotmail.com");
-                }
-                if (email.IndexOf("aolcom") > -1)
-                {
-                    email = email.Replace("aolcom", "aol.com");
-                }
-                if (email.IndexOf("aimcom") > -1)
-                {
-                    email = email.Replace("aimcom", "aim.com");
-                }
-
-                if (email.IndexOf("@.") > -1)
-                {
-                    email = email.Replace("@.", "@");
-                }
-
-                sSuffix = email;
-                if (sSuffix.IndexOf("@") > -1)
-                {
-                    sSuffix = sSuffix.Substring(email.IndexOf("@") + 1);
-                }
-                else if (sSuffix.IndexOf("#") > -1)
-                {
-                    sSuffix = sSuffix.Substring(email.IndexOf("#") + 1);
-                }
-                else if (sSuffix.IndexOf("!") > -1)
-                {
-                    sSuffix = sSuffix.Substring(sSuffix.IndexOf("!") + 1);
-                }
+                    if (email.IndexOf(".com.net") > -1)
+                    {
+                        email = email.Replace(".com.net", ".net");
+                    }
 
 
+                    if (email.IndexOf("gmailcom") > -1)
+                    {
+                        email = email.Replace("gmailcom", "gmail.com");
+                    }
+                    if (email.IndexOf("yahoocom") > -1)
+                    {
+                        email = email.Replace("yahoocom", "yahoo.com");
+                    }
+                    if (email.IndexOf("hotmailcom") > -1)
+                    {
+                        email = email.Replace("hotmailcom", "hotmail.com");
+                    }
+                    if (email.IndexOf("aolcom") > -1)
+                    {
+                        email = email.Replace("aolcom", "aol.com");
+                    }
+                    if (email.IndexOf("aimcom") > -1)
+                    {
+                        email = email.Replace("aimcom", "aim.com");
+                    }
+                    if (email.IndexOf("@.") > -1)
+                    {
+                        email = email.Replace("@.", "@");
+                    }
+
+                    sSuffix = email;
+                    if (sSuffix.IndexOf("@") > -1)
+                    {
+                        sSuffix = sSuffix.Substring(email.IndexOf("@") + 1);
+                        validsuffix = true;
+                    }
+                    else if (sSuffix.IndexOf("#") > -1)
+                    {
+                        sSuffix = sSuffix.Substring(email.IndexOf("#") + 1);
+                        validsuffix = true;
+          
+                    }
+                    else if (sSuffix.IndexOf("!") > -1)
+                    {
+                        sSuffix = sSuffix.Substring(sSuffix.IndexOf("!") + 1);
+                        validsuffix = true;
+                    }
 
                 if (sSuffix.IndexOf(".") > -1)
                 {
@@ -130,585 +138,597 @@
                     validsuffix = true;
                 }
 
+                    if (validsuffix == false)
+                    {
+                        DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 16, " + slSuprreesionIDFieldName + " = 4," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                        break;
+                    }
 
-                if (validsuffix == false)
+
+            suffix = sSuffix;
+            if (suffix.IndexOf("..") > -1)
+            {
+                suffix = suffix.Replace("..", ".");
+                email = email.Replace("..", ".");
+            }
+            if (IsValidSuffix(suffix) == false)
+            {
+                if (suffix.IndexOf("\\") > -1)
                 {
-                    inewemail = "bad suffix";
-                    irulecode = "3";
-                    isupressionID = sSuffix;
-                    // DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 1, " + slSuprreesionIDFieldName + " = 4," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, 1);
-                    break;
+                    suffix = suffix.Replace("\\", "");
+                    email = email.Replace("\\", "");
                 }
-
-                suffix = sSuffix;
+                if (suffix.IndexOf("/") > -1)
+                {
+                    suffix = suffix.Replace("/", ".");
+                    email = email.Replace("/", "");
+                }
+                if (suffix.IndexOf(",") > -1)
+                {
+                    suffix = suffix.Replace(",", ".");
+                    email = email.Replace(",", "");
+                }
                 if (suffix.IndexOf("..") > -1)
                 {
                     suffix = suffix.Replace("..", ".");
                     email = email.Replace("..", ".");
                 }
-
-      
-                if (IsValidSuffix(suffix) == false)
+                if (suffix.IndexOf("'") > -1)
                 {
-                    if (suffix.IndexOf("\\") > -1)
-                    {
-                        suffix = suffix.Replace("\\", "");
-                        email = email.Replace("\\", "");
-                    }
-                    if (suffix.IndexOf("/") > -1)
-                    {
-                        suffix = suffix.Replace("/", ".");
-                        email = email.Replace("/", "");
-                    }
-                    if (suffix.IndexOf(",") > -1)
-                    {
-                        suffix = suffix.Replace(",", ".");
-                        email = email.Replace(",", "");
-                    }
-
-                    if (suffix.IndexOf("'") > -1)
-                    {
-                        suffix = suffix.Replace("'", "");
-                        email = email.Replace("'", "");
-                    }
-                    if (suffix.IndexOf("`") > -1)
-                    {
-                        suffix = suffix.Replace("`", "");
-                        email = email.Replace("`", "");
-                    }
-                    if (suffix.IndexOf("-") > -1)
-                    {
-                        suffix = suffix.Replace("-", "");
-                    }
-                    if (suffix.IndexOf("&") > -1)
-                    {
-                        suffix = suffix.Replace("&", "");
-                        email = email.Replace("&", "");
-                    }
-                    if (suffix.IndexOf("\\") > -1)
-                    {
-                        suffix = suffix.Replace("\\", "");
-                        email = email.Replace("\\", "");
-                    }
-                    if (suffix.IndexOf("?") > -1)
-                    {
-                        suffix = suffix.Replace("?", "");
-                        email = email.Replace("?", "");
-                    }
-                    if (suffix.IndexOf("=") > -1)
-                    {
-                        suffix = suffix.Replace("=", "");
-                        email = email.Replace("=", "");
-                    }
-                    if (suffix.IndexOf("%") > -1)
-                    {
-                        suffix = suffix.Replace("%", "");
-                        email = email.Replace("%", "");
-                    }
+                    suffix = suffix.Replace("'", "");
+                    email = email.Replace("'", "");
                 }
-
-
-                if (IsValidSuffix(suffix) == false)
+                if (suffix.IndexOf("`") > -1)
                 {
-                    inewemail = "invalid suffix / or , or . not the first digit";
-                    irulecode = "8";
-                    isupressionID = "invalid suffix need to add rule: " + email + " suffix " + suffix;
-                    break;
+                    suffix = suffix.Replace("`", "");
+                    email = email.Replace("`", "");
                 }
-                else
+                if (suffix.IndexOf("-") > -1)
                 {
-
-                    if (bblnFixTypoSuffix == true)
-                    {
-                        tsuffix = DbScalarDB("select replace_with from supression where reason = 8 and email_or_string = '" + suffix + "'", 1);
-                        if (tsuffix == null && tsuffix.Length > 0)
-                        {
-                            suffix = tsuffix;
-                        }
-                    }
+                    suffix = suffix.Replace("-", "");
+                }
+                if (suffix.IndexOf("&") > -1)
+                {
+                    suffix = suffix.Replace("&", "");
+                    email = email.Replace("&", "");
+                }
+                if (suffix.IndexOf("\\") > -1)
+                {
+                    suffix = suffix.Replace("\\", "");
+                    email = email.Replace("\\", "");
+                }
+                if (suffix.IndexOf("?") > -1)
+                {
+                    suffix = suffix.Replace("?", "");
+                    email = email.Replace("?", "");
+                }
+                if (suffix.IndexOf("=") > -1)
+                {
+                    suffix = suffix.Replace("=", "");
+                    email = email.Replace("=", "");
+                }
+                if (suffix.IndexOf("%") > -1)
+                {
+                    suffix = suffix.Replace("%", "");
+                    email = email.Replace("%", "");
                 }
 
                 if (IsValidSuffix(suffix) == false)
                 {
-                    if (suffix.Substring(0, 1) == ".")
-                    {
-                        inewemail = "invalid suffix / or , or . not the first digit";
-                        irulecode = "8";
-                        isupressionID = "invalid suffix need to add rule: " + email + " suffix " + suffix;
-                        break;
-                    }
-
-                    if (suffix.IndexOf("/") > 0 || suffix.IndexOf(",") > 0)
-                    {
-                        inewemail = "invalid suffix / or , or . not the first digit";
-                        irulecode = "8";
-                        isupressionID = "invalid suffix need to add rule: " + email + " suffix " + suffix;
-                        break;
-                    }
-                }
-                ///////////////////////////////////////////////////////////////////////////////////////////
-            #endregion
-
-
-
-
-
-
-
-                bool validuser = false;
-                #region user_name
-                //user/////////////////////////////////////////////////////////////////////////////////
-                if (email.IndexOf("@") > -1)
-                {
-                    user = email.Substring(0, email.IndexOf("@") + 1);
-                    validuser = true;
-                }
-                else if (email.IndexOf("#") > -1)
-                {
-                    user = email.Substring(0, email.IndexOf("#") + 1);
-                    user = user.Substring(0, user.Length - 1) + "@";
-                    email = email.Replace("#", "@");
-                    validuser = true;
-                }
-                else if (email.IndexOf("!") > -1)
-                {
-                    user = email.Substring(0, email.IndexOf("!") + 1);
-                    user = user.Substring(0, user.Length - 1) + "@";
-                    email = email.Replace("!", "@");
-                    validuser = true;
-                }
-
-                if (validuser == false)
-                {
-                    inewemail = "bad username";
-                    irulecode = "3";
-                    isupressionID = user;
-                    //DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 3, " + slSuprreesionIDFieldName + " = 5," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, 1);
+                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 15, " + slSuprreesionIDFieldName + " = 3," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
                     break;
                 }
-
-                if (IsGoodUser(user.Substring(0, user.Length - 1)) == false)
-                {
-                    if (user.IndexOf("#") > -1)
-                    {
-                        user = user.Replace("#", "");
-                    }
-                    if (user.IndexOf("`") > -1)
-                    {
-                        user = user.Replace("`", "");
-                    }
-                    if (user.IndexOf("$") > -1)
-                    {
-                        user = user.Replace("$", "4");
-
-                    }
-                    if (user.IndexOf("=") > -1)
-                    {
-                        user = user.Replace("=", "");
-                    }
-                    if (user.IndexOf("`") > -1)
-                    {
-                        user = user.Replace("`", "");
-                    }
-                    if (user.IndexOf("^") > -1)
-                    {
-                        user = user.Replace("^", "5");
-                    }
-                    if (user.IndexOf("+") > -1)
-                    {
-                        user = user.Replace("+", "");
-                    }
-                    if (user.IndexOf("/") > -1)
-                    {
-                        user = user.Replace("/", "");
-                    }
-                    if (user.IndexOf("\\") > -1)
-                    {
-                        user = user.Replace("\\", "");
-                    }
-                    if (user.IndexOf("&") > -1)
-                    {
-                        user = user.Replace("&", "");
-                    }
-                    if (user.IndexOf("'") > -1)
-                    {
-                        user = user.Replace("'", "");
-                    }
-                    if (user.IndexOf("?") > -1)
-                    {
-                        user = user.Replace("?", "");
-                    }
-                    if (user.IndexOf("*") > -1)
-                    {
-                        user = user.Replace("*", "8");
-                    }
-                    if (user.IndexOf("~") > -1)
-                    {
-                        user = user.Replace("~", "");
-                    }
-                    if (user.IndexOf("!") > -1)
-                    {
-                        user = user.Replace("!", "");
-                    }
-                    if (user.IndexOf("_") == 0)
-                    {
-                        user = user.Substring(1);
-                    }
-                    if (user.IndexOf(".") == 0)
-                    {
-                        user = user.Substring(1);
-                    }
-                    if (user.IndexOf(",") > -1)
-                    {
-                        user = user.Replace(",", ".");
-                    }
-
-                }
-
-
-
-                if (IsGoodUser(user.Substring(0, user.Length - 1)) == false)
-                {
-                    inewemail = "bad username";
-                    irulecode = "3";
-                    isupressionID = user.Substring(0, user.Length - 1);
-                    //DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 3, " + slSuprreesionIDFieldName + " = 6," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, 1);
-                    break;
-                }
-
-                if (bblnDeleteRoleUsernames == true)
-                {
-                    string tuser = "";
-                    tuser = DbScalarDB("select id  from supression where reason = 7 and email_or_string = '" + user.Substring(0, user.Length - 1) + "'", 1);
-                    if (tuser == null && tuser.Length > 0)
-                    {
-                        inewemail = "invalid do to role username";
-                        irulecode = "7";
-                        isupressionID = "role id found in db " + email + " id " + tuser + " user " + user;
-                        //DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 7, " + slSuprreesionIDFieldName + " = " + tuser.ToString() + "," + slNewEmailFieldName + " = 'invalid'", 1);
-                        break;
-                    }
-                }
-
-                string tuser2 = "";
-                tuser2 = DbScalarDB("select id  from supression where reason = 3 and email_or_string = '" + user.Substring(0, user.Length - 1) + "'", 1);
-                if (tuser2 == null && tuser2.Length > 0)
-                {
-                    inewemail = "fictitious user found in db";
-                    irulecode = "3";
-                    isupressionID = "fictitious user found in db " + email + " found " + user + " id + " + tuser2;
-                    //DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 3, " + slSuprreesionIDFieldName + " = " + tuser.ToString() + "," + slNewEmailFieldName + " = 'invalid'", 1);
-                    break;
-                }
-
-
-                if (user.IndexOf("@") < 2)
-                {
-                    inewemail = "invalid user @ is not at the end of the username";
-                    irulecode = "3";
-                    isupressionID = "invalid user need to add rule: " + user + " email + " + email;
-                    //DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 3, " + slSuprreesionIDFieldName + " = 0," + slNewEmailFieldName + " = 'invalid'", 1);
-                    break;
-                }
-                if (bblnDeleteSpamTrapDomains == true)
-                {
-                    string tuser3 = "";
-                    tuser3 = DbScalarDB("select id  from supression where reason = 14 and email_or_string = '" + user.Substring(0, user.Length - 1) + "'", 1);
-                    if (tuser3 == null && tuser3.Length > 0)
-                    {
-                        inewemail = "invalid user spam trap username";
-                        irulecode = "14";
-                        isupressionID = "invalid spamtrap username: " + user + " email + " + email + " id " + tuser3;
-                        // DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 14, " + slSuprreesionIDFieldName + " = " + tuser.ToString() + "," + slNewEmailFieldName + " = 'invalid'", 1);
-                        break;
-                    }
-                }
-
-
-                ///user//////////////////////////////////////////////////////////////////////////////////
-                #endregion
-
-
-                bool validdomain = false;
-                string tdomain = "";
-
-
-
-
-
-                #region domain_check
-                ////////////////////////////////////////////////////////////////////////////////
-
-                if (email.IndexOf("@") > -1)
-                {
-                    domain = email.Substring(email.IndexOf("@") + 1);
-                    validdomain = true;
-                }
-                else if (email.IndexOf("#") > -1)
-                {
-                    domain = email.Substring(email.IndexOf("#") + 1);
-                    email = email.Replace("#", "@");
-                    validdomain = true;
-                }
-                else if (email.IndexOf("!") > -1)
-                {
-                    domain = email.Substring(email.IndexOf("!") + 1);
-                    email = email.Replace("!", "@");
-                    validdomain = true;
-                }
-
-                if (validdomain == false)
-                {
-                    inewemail = "invalid domain no @ or / or , to work with";
-                    irulecode = "3";
-                    isupressionID = "invalid domain need to add rule: " + user + " email + " + email;
-                    //  DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 3, " + slSuprreesionIDFieldName + " = 0," + slNewEmailFieldName + " = 'invalid'", 1);
-                    break;
-                }
-
-                if (IsGoodDomain(domain) == false)
-                {
-                    domain = domain.Replace("@", "");
-                    if (domain.IndexOf("#") > -1)
-                    {
-                        domain = domain.Replace("#", "");
-                        email = email.Replace("#", "");
-                    }
-                    if (domain.IndexOf("!") > -1)
-                    {
-                        domain = domain.Replace("!", "");
-                        email = email.Replace("!", "");
-                    }
-                    if (domain.IndexOf(",") > -1)
-                    {
-                        domain = domain.Replace(",", "");
-                        email = email.Replace(",", "");
-                    }
-                    if (domain.IndexOf("&") > -1)
-                    {
-                        domain = domain.Replace("&", "");
-                        email = email.Replace("&", "");
-                    }
-                    if (domain.IndexOf("/") > -1)
-                    {
-                        domain = domain.Replace("/", "");
-                        email = email.Replace("/", "");
-                    }
-                    if (domain.IndexOf("\\") > -1)
-                    {
-                        domain = domain.Replace("\\", "");
-                        email = email.Replace("\\", "");
-                    }
-                    if (domain.IndexOf("?") > -1)
-                    {
-                        domain = domain.Replace("?", "");
-                        email = email.Replace("?", "");
-                    }
-                    if (domain.IndexOf("=") > -1)
-                    {
-                        domain = domain.Replace("=", "");
-                        email = email.Replace("=", "");
-                    }
-                    if (domain.IndexOf("%") > -1)
-                    {
-                        domain = domain.Replace("%", "");
-                        email = email.Replace("%", "");
-                    }
-                    if (domain.IndexOf("_") > -1)
-                    {
-                        domain = domain.Replace("_", "-");
-                    }
-
-                }
-                if (domain.IndexOf(".") > -1)
-                {
-                    domain = domain.Substring(0, domain.IndexOf("."));
-                }
-
-                bool bfixed = false;
-                if (bblnFixTyposMajorISP == true)
-                {
-                    DataSet tds = new DataSet();
-                    tds = DbDataSetDB("select id,replace_with  from supression where reason = 1 and email_or_string = '" + domain + "'", 1);
-                    if (IsEmpty(tds) == true)
-                    {
-                        tdomain = tds.Tables[0].Rows[0][1].ToString();
-                        string sretid = tds.Tables[0].Rows[0][0].ToString();
-                        if (tdomain.IndexOf(".") > 0)
-                        {
-                            suffix = tdomain.Substring(tdomain.IndexOf("."));
-                            domain = tdomain.Substring(0, tdomain.IndexOf("."));
-                            bfixed = true;
-                        }
-                        else
-                        {
-                            domain = tdomain;
-                            bfixed = true;
-                        }
-                    }
-                }
-
-                bool bfixed2 = false;
-                if (bblnFixKnownTyposGeneral == true && bfixed == false)
-                {
-                    DataSet tds = new DataSet();
-                    tds = DbDataSetDB("select id,replace_with  from supression where reason = 2 and email_or_string = '" + domain + "'", 1);
-                    if (IsEmpty(tds) == true)
-                    {
-                        tdomain = tds.Tables[0].Rows[0][1].ToString();
-                        string sretid = tds.Tables[0].Rows[0][0].ToString();
-                        if (tdomain.IndexOf(".") > 0)
-                        {
-                            suffix = tdomain.Substring(tdomain.IndexOf("."));
-                            domain = tdomain.Substring(0, tdomain.IndexOf("."));
-                            bfixed = true;
-                        }
-                        else
-                        {
-                            domain = tdomain;
-                            bfixed = true;
-                        }
-                    }
-                }
-
-                if ((bfixed2 == false && bblnFixKnownTyposGeneral == true) && (bfixed == false && bblnFixTyposMajorISP == true))
-                {
-                    if (IsGoodDomain(domain) == false)
-                    {
-                        inewemail = "invalid domain";
-                        irulecode = "17";
-                        isupressionID = "";
-                        //DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 17, " + slSuprreesionIDFieldName + " = 9," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
-                        break;
-                    }
-                }
-
-
-                if (bblnDeleteFictitiousDomains == true)
-                {
-                    tdomain = DbScalarDB("select id  from supression where reason = 3 and email_or_string = '" + domain + "'", 1);
-                    if (tdomain == null && tdomain.Length > 0)
-                    {
-                    inewemail = "fictitious domain";
-                    irulecode = "3";
-                    isupressionID = tdomain;
-                        // DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 3, " + slSuprreesionIDFieldName + " =" + tdomain.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, 1);
-                        break;
-                    }
-                }
-
-                if (bblnDeleteFictitiousDomains == true)
-                {
-                    tdomain = DbScalarDB("select id  from supression where reason = 3 and email_or_string = '" + domain + suffix + "'", 1);
-                    if (tdomain == null && tdomain.Length > 0)
-                    {
-                        inewemail = "fictitious domain";
-                        irulecode = "3";
-                        isupressionID = tdomain;
-                        // DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 3, " + slSuprreesionIDFieldName + " =" + tdomain.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, 1);
-                        break;
-                    }
-                }
-
-                if (bblnDeleteSpamTrapDomains == true)
-                {
-                    tdomain = DbScalarDB("select id  from supression where reason = 4 and email_or_string = '" + domain + suffix + "'", 1);
-                    if (tdomain == null && tdomain.Length > 0)
-                    {
-                    inewemail = "spamtrapdomain";
-                    irulecode = "4";
-                    isupressionID = tdomain;
-                        //   DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 4, " + slSuprreesionIDFieldName + " =" + tdomain.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, 1);
-                        break;
-                    }
-                }
-
-                if (bblnDeleteWirelessDomains == true)
-                {
-                    tdomain = DbScalarDB("select id  from supression where reason = 6 and email_or_string = '" + domain + suffix + "'", 1);
-                    if (tdomain == null && tdomain.Length > 0)
-                    {
-                    inewemail = "wireless domain";
-                    irulecode = "3";
-                    isupressionID = tdomain;
-                        //  DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 6, " + slSuprreesionIDFieldName + " =" + tdomain.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, 1);
-                        break;
-                    }
-                }
-
-                if (bblnDeleteWirelessDomains == true)
-                {
-                    tdomain = DbScalarDB("select id  from supression where reason = 5 and email_or_string = '" + user + domain + suffix + "'", 1);                                                                                //Fix
-                    if (tdomain == null && tdomain.Length > 0)
-                    {
-                    inewemail = "wirless domain";
-                    irulecode = "5";
-                    isupressionID = tdomain;
-                        // DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 5, " + slSuprreesionIDFieldName + " =" + tdomain.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, 1);
-                        break;
-                    }
-                }
-
-                if (bblnDeleteBadFormatedMajorISP == true)
-                {
-                    if (DomainIsMailable(domain,ssdns,false,9) == false)
-                    {
-                        inewemail = "domain not mailable";
-                        irulecode = "23";
-                        isupressionID = "0";
-                    }
-                }
-
-                if (IsValidEmail(user + domain + suffix) == true)
-                {
-                    // DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 0, " + slSuprreesionIDFieldName + " = 0," + slNewEmailFieldName + " = '" + user + domain + suffix + "' where " + slKeyField + " = " + keyfield, 1);
-                    if (bblnDeleteEmailifMXcantVerifyMajorISP == true)
-                    {
-                        if (domain == "gmail")
-                        {
-                            try
-                            {
-                                string response = "";
-                                string message = "";
-                                TcpClient client = new TcpClient();
-                                client.Connect("173.194.70.27", 25);
-                                response = Response(client);
-                                message = "HELO me.com\r\n";
-                                Write(message, client);
-                                response = Response(client);
-                                message = "MAIL FROM:<mevanchik@relationship1.com>\r\n";
-                                Write(message, client);
-                                response = Response(client);
-                                message = "RCPT TO:<" + user + domain + suffix + ">\r\n";
-                                Write(message, client);
-                                response = Response(client);
-                                if (response.Substring(0, 3) == "250")
-                                {
-                                    client.Close();
-                                    return "invalid gmail account";
-                                }
-                                else
-                                {
-                                    return "invalid gmail: " + user + domain + suffix;
-                                }
-                            }
-                            catch { }
-                        }
-                    }
-
-                    return user + domain + suffix;
-                }
-                else
-                {
-                    //  DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 0, " + slSuprreesionIDFieldName + " = 10," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, 1);
-                    return "invalid email: " + inewemail + " | " + irulecode + " | " + iSuppressionID + " | " + email;
-                }
-                break;
-                /////domain///////////////////////////////////////////////////////////////////////////
-                #endregion
             }
             
-            return "invalid email: " + inewemail + " | " + irulecode + " | " + iSuppressionID + " | " + email;
+
+            else
+            {
+
+                if (bblnFixTypoSuffix == true)
+                {
+                    tsuffix = DbScalarDB("select replace_with from supression where reason = 8 and email_or_string = '" + suffix + "'", 1);
+                    if (tsuffix == null && tsuffix.Length > 0)
+                    {
+                        suffix = tsuffix;
+                    }
+                    else
+                    {
+                        if (IsValidSuffix(suffix) == false)
+                        {
+                            if (suffix.Substring(0, 1) == ".")
+                            {
+                                DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 14, " + slSuprreesionIDFieldName + " = 3," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                break;
+                            }
+
+                            if (suffix.IndexOf("/") > 0 || suffix.IndexOf(",") > 0)
+                            {
+                                DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 13, " + slSuprreesionIDFieldName + " = 4," + slNewEmailFieldName + " = 'invalid'where " + slKeyField + " = " + keyfield, slConnectionType);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+                
+            
+                    ///////////////////////////////////////////////////////////////////////////////////////////
+                    #endregion
+
+                    bool validuser = false;
+                    #region user_name
+                        //user/////////////////////////////////////////////////////////////////////////////////
+                        if (email.IndexOf("@") > -1)
+                        {
+                            user = email.Substring(0, email.IndexOf("@") + 1);
+                            validuser = true;
+                        }
+                        else if (email.IndexOf("#") > -1)
+                        {
+                            user = email.Substring(0, email.IndexOf("#") + 1);
+                            user = user.Substring(0, user.Length - 1) + "@";
+                            email = email.Replace("#", "@");
+                            validuser = true;
+                        }
+                        else if (email.IndexOf("!") > -1)
+                        {
+                            user = email.Substring(0, email.IndexOf("!") + 1);
+                            user = user.Substring(0, user.Length - 1) + "@";
+                            email = email.Replace("!", "@");
+                            validuser = true;
+                        }
+
+                        if (validuser == false)
+                        {
+                            DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 12, " + slSuprreesionIDFieldName + " = 5," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                            break;
+                        }
+
+                        if (IsGoodUser(user.Substring(0, user.Length - 1)) == false)
+                        {
+                            if (user.IndexOf("#") > -1)
+                            {
+                                user = user.Replace("#", "");
+                            }
+                            if (user.IndexOf("`") > -1)
+                            {
+                                user = user.Replace("`", "");
+                            }
+                            if (user.IndexOf("$") > -1)
+                            {
+                                user = user.Replace("$", "4");
+
+                            }
+                            if (user.IndexOf("=") > -1)
+                            {
+                                user = user.Replace("=", "");
+
+                            }
+                            if (user.IndexOf("`") > -1)
+                            {
+                                user = user.Replace("`", "");
+
+                            }
+                            if (user.IndexOf("\\") > -1)
+                            {
+                                user = user.Replace("\\", "");
+                            }
+                            if (user.IndexOf("^") > -1)
+                            {
+                                user = user.Replace("^", "5");
+                            }
+                            if (user.IndexOf("+") > -1)
+                            {
+                                user = user.Replace("+", "");
+                            }
+                            if (user.IndexOf("/") > -1)
+                            {
+                                user = user.Replace("/", "");
+                            }
+                            if (user.IndexOf("&") > -1)
+                            {
+                                user = user.Replace("&", "");
+                            }
+                            if (user.IndexOf("'") > -1)
+                            {
+                                user = user.Replace("'", "");
+                            }
+                            if (user.IndexOf("?") > -1)
+                            {
+                                user = user.Replace("?", "");
+                            }
+                            if (user.IndexOf("*") > -1)
+                            {
+                                user = user.Replace("*", "8");
+                            }
+                            if (user.IndexOf("~") > -1)
+                            {
+                                user = user.Replace("~", "");
+                            }
+                            if (user.IndexOf("!") > -1)
+                            {
+                                user = user.Replace("!", "");
+                            }
+                            if (user.IndexOf("_") == 0)
+                            {
+                                user = user.Substring(1);
+                            }
+                            if (user.IndexOf(".") == 0)
+                            {
+                                user = user.Substring(1);
+                            }
+                            if (user.IndexOf(",") > -1)
+                            {
+                                user = user.Replace(",", ".");
+                            }
+                            if (IsGoodUser(user.Substring(0, user.Length - 1)) == false)
+                            {
+                                DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 11, " + slSuprreesionIDFieldName + " = 6," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                break;
+                            }
+                        }
+
+                        if (user.IndexOf("@") < 2)
+                        {
+                            DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 10, " + slSuprreesionIDFieldName + " = 7," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                            break;
+                        }
+
+                        if (user.Substring(0, 1) == "." || user.Substring(0, 1) == "-" || user.Substring(0, 1) == "_")
+                        {
+                            DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 10, " + slSuprreesionIDFieldName + " = 7," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                            break;
+                        }
+                                    
+                            if (bblnDeleteRoleUsernames == true)
+                            {
+                                string tuser = "";
+                                tuser = DbScalarDB("select id  from supression where reason = 7 and email_or_string = '" + user.Substring(0, user.Length - 1) + "'", 1);
+                                if (tuser == null && tuser.Length > 0)
+                                {
+                                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 7, " + slSuprreesionIDFieldName + " = " + tuser.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    break;
+                                }
+                            }
+
+                                string tuser2 = "";
+                                tuser2 = DbScalarDB("select id  from supression where reason = 3 and email_or_string = '" + user.Substring(0, user.Length - 1) + "'", 1);
+                                if (tuser2 == null && tuser2.Length > 0)
+                                {
+                                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 3, " + slSuprreesionIDFieldName + " = " + tuser2.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    break;
+                                }
+
+         
+
+                                if (bblnDeleteSpamTrapDomains == true)
+                                {
+                                    string tuser3 = "";
+                                    tuser3 = DbScalarDB("select id  from supression where reason = 14 and email_or_string = '" + user.Substring(0, user.Length - 1) + "'", 1);
+                                    if (tuser3 == null && tuser3.Length > 0)
+                                    {
+                                        DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 19, " + slSuprreesionIDFieldName + " = " + tuser3.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                        break;
+                                    }
+                                }
+                        ///user//////////////////////////////////////////////////////////////////////////////////
+                        #endregion
+
+
+                    bool validdomain = false;
+                    string tdomain = "";
+    
+                    #region domain_check
+                        ////////////////////////////////////////////////////////////////////////////////
+                            if (email.IndexOf("@") > -1)
+                            {
+                                domain = email.Substring(email.IndexOf("@") + 1);
+                                validdomain = true;
+                            }
+                            else if (email.IndexOf("#") > -1)
+                            {
+                                domain = email.Substring(email.IndexOf("#") + 1);
+                                email = email.Replace("#", "@");
+                                validdomain = true;
+                            }
+                            else if (email.IndexOf("!") > -1)
+                            {
+                                domain = email.Substring(email.IndexOf("!") + 1);
+                                email = email.Replace("!", "@");
+                                validdomain = true;
+                            }
+
+                            if (validdomain == false)
+                            {
+                                DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 9, " + slSuprreesionIDFieldName + " = 8," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                break;
+                            }
+
+                            if (IsGoodDomain(domain) == false)
+                            {
+                                domain = domain.Replace("@", "");
+                                if (domain.IndexOf("#") > -1)
+                                {
+                                    domain = domain.Replace("#", "");
+                                    email = email.Replace("#", "");
+                                }
+                                if (domain.IndexOf("!") > -1)
+                                {
+                                    domain = domain.Replace("!", "");
+                                    email = email.Replace("!", "");
+                                }
+                                if (domain.IndexOf(",") > -1)
+                                {
+                                    domain = domain.Replace(",", "");
+                                    email = email.Replace(",", "");
+                                }
+                                if (domain.IndexOf("&") > -1)
+                                {
+                                    domain = domain.Replace("&", "");
+                                    email = email.Replace("&", "");
+                                }
+                                if (domain.IndexOf("/") > -1)
+                                {
+                                    domain = domain.Replace("/", "");
+                                    email = email.Replace("/", "");
+                                }
+                                if (domain.IndexOf("\\") > -1)
+                                {
+                                    domain = domain.Replace("\\", "");
+                                    email = email.Replace("\\", "");
+                                }
+                                if (domain.IndexOf("?") > -1)
+                                {
+                                    domain = domain.Replace("?", "");
+                                    email = email.Replace("?", "");
+                                }
+                                if (domain.IndexOf("=") > -1)
+                                {
+                                    domain = domain.Replace("=", "");
+                                    email = email.Replace("=", "");
+                                }
+                                if (domain.IndexOf("%") > -1)
+                                {
+                                    domain = domain.Replace("%", "");
+                                    email = email.Replace("%", "");
+                                }
+                                if (domain.IndexOf("_") > -1)
+                                {
+                                    domain = domain.Replace("_", "-");
+                                }
+
+                            }
+
+                            if (domain.IndexOf(".") > -1)
+                            {
+                                domain = domain.Substring(0, domain.IndexOf("."));
+                            }
+
+                            if (IsGoodDomain(domain) == false)
+                            {
+                                DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 8, " + slSuprreesionIDFieldName + " = 18," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                break;
+                            }
+
+                            bool bfixed = false;
+                            if (bblnFixTyposMajorISP == true)
+                            {
+                                DataSet tds = new DataSet();
+                                tds = DbDataSetDB("select id,replace_with  from supression where reason = 1 and email_or_string = '" + domain + "'", 1);
+                                if (IsEmpty(tds) == true)
+                                {
+                                    tdomain = tds.Tables[0].Rows[0][1].ToString();
+                                    string sretid = tds.Tables[0].Rows[0][0].ToString();
+                                    if (tdomain.IndexOf(".") > 0)
+                                    {
+                                        suffix = tdomain.Substring(tdomain.IndexOf("."));
+                                        domain = tdomain.Substring(0, tdomain.IndexOf("."));
+                                        bfixed = true;
+                                    }
+                                    else
+                                    {
+                                       domain = tdomain;
+                                       bfixed = true;
+                                    }
+                                }
+                            }
+
+                            bool bfixed2 = false;
+                            if (bblnFixKnownTyposGeneral == true && bfixed == false)
+                            {
+                                DataSet tds = new DataSet();
+                                tds = DbDataSetDB("select id,replace_with  from supression where reason = 2 and email_or_string = '" + domain + "'", 1);
+                                if (IsEmpty(tds) == true)
+                                {
+                                    tdomain = tds.Tables[0].Rows[0][1].ToString();
+                                    string sretid = tds.Tables[0].Rows[0][0].ToString();
+                                    if (tdomain.IndexOf(".") > 0)
+                                    {
+                                        suffix = tdomain.Substring(tdomain.IndexOf("."));
+                                        domain = tdomain.Substring(0, tdomain.IndexOf("."));
+                                        bfixed2 = true;
+                                    }
+                                    else
+                                    {
+                                        domain = tdomain;
+                                        bfixed2 = true;
+                                    }
+                                }
+                            }
+
+                            if((bfixed2 == false && bblnFixKnownTyposGeneral == true) && (bfixed == false && bblnFixTyposMajorISP == true))
+                            {
+                                if (IsGoodDomain(domain) == false)
+                                {
+                                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 17, " + slSuprreesionIDFieldName + " = 9," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    break;
+                                }
+                            }
+
+                            if (bblnDeleteFictitiousDomains == true)
+                            {
+                                tdomain = DbScalarDB("select id  from supression where reason = 3 and email_or_string = '" + domain + "'", 1);
+                                if (tdomain == null && tdomain.Length > 0)
+                                {
+                                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 3, " + slSuprreesionIDFieldName + " =" + tdomain.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    break;
+                                }
+                            }
+
+                            if (bblnDeleteSpamTrapDomains == true)
+                            {
+                                tdomain = DbScalarDB("select id  from supression where reason = 4 and email_or_string = '" + domain + suffix + "'", 1);
+                                if (tdomain == null && tdomain.Length > 0)
+                                {
+                                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 4, " + slSuprreesionIDFieldName + " = " + tdomain.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    break;
+                                }
+                            }
+
+                            if (bblnDeleteWirelessDomains == true)
+                            {
+                                tdomain = DbScalarDB("select id  from supression where reason = 6 and email_or_string = '" + domain + suffix + "'", 1);
+                                if (tdomain == null && tdomain.Length > 0)
+                                {
+                                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 6, " + slSuprreesionIDFieldName + " = " + tdomain.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    break;
+                                }
+                            }
+
+                            if (bblnDeleteWirelessDomains == true)
+                            {
+                                tdomain = DbScalarDB("select id  from supression where reason = 5 and email_or_string = '" + user + domain + suffix + "'", 1);                                                                                //Fix
+                                if (tdomain == null && tdomain.Length > 0)
+                                {
+                                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 5, " + slSuprreesionIDFieldName + " =" + tdomain.ToString() + "," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    break;
+                                }
+                            }
+
+                            if (bblnDeleteBadFormatedMajorISP == true)
+                            {
+                                if (DomainIsMailable(domain, ssdns, false, keyfield) == false)
+                                {
+                                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 23, " + slSuprreesionIDFieldName + " =0," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    break;
+                                }
+                            }
+
+
+                            if (IsValidEmail(user + domain + suffix) == true)
+                            {
+                                    #region ispcheck
+                                    if (bblnDeleteEmailifMXcantVerifyMajorISP == true)
+                                    {
+                                        if (domain == "gmail")
+                                        {
+                                            try
+                                            {
+                                                string response = "";
+                                                string message = "";
+                                                TcpClient client = new TcpClient();
+                                                client.Connect("173.194.70.27", 25);
+                                                response = Response(client);
+                                                message = "HELO me.com\r\n";
+                                                Write(message, client);
+                                                response = Response(client);
+                                                message = "MAIL FROM:<"user + domain + suffix">\r\n";
+                                                Write(message, client);
+                                                response = Response(client);
+                                                message = "RCPT TO:<" + user + domain + suffix + ">\r\n";
+                                                Write(message, client);
+                                                response = Response(client);
+                                                if (response.Substring(0, 3) == "250")
+                                                {
+                                                    message = "quit\r\n";
+                                                    Write(message, client);
+                                                    client.Close();
+                                                    DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 18, " + slSuprreesionIDFieldName + " = 12," + slNewEmailFieldName + " = '" + user + domain + suffix + "' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                                    break;
+                                                }
+                                                else
+                                                {
+
+                                                        DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 102, " + slSuprreesionIDFieldName + " = 0," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                                    
+                                                    break;
+                                                }
+                                            }
+                                            catch 
+                                            {
+                                                DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 24, " + slSuprreesionIDFieldName + " = 0," + slNewEmailFieldName + " = '" + user + domain + suffix + "' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                            }
+                                        }
+                                    }
+
+
+
+
+                                    
+                                    #endregion
+                                    if (stempEmail == user + domain + suffix)
+                                    {
+                                        DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 101, " + slSuprreesionIDFieldName + " = 0," + slNewEmailFieldName + " = '" + user + domain + suffix + "' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    }
+                                    else
+                                    {
+                                        DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 100, " + slSuprreesionIDFieldName + " = 0," + slNewEmailFieldName + " = '" + user + domain + suffix + "' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                    }
+                            }
+                            else
+                            {
+                                DbExecute("update " + slTableName + " set " + slReasonFieldName + " = 20, " + slSuprreesionIDFieldName + " = 0," + slNewEmailFieldName + " = 'invalid' where " + slKeyField + " = " + keyfield, slConnectionType);
+                                break;
+
+                            }
+                          break;
+                        /////domain///////////////////////////////////////////////////////////////////////////
+                        #endregion
+                }//inner while for performance break
+            }//end while
+
+
+        }//end function
+
+        public void VerifyMX(DataSet semails)
+        {
+            string email = "";
+            int keyfield = 0;
+            string sSuffix = "";
+            string domain = "";
+            string user = "";
+            string suffix = "";
+            int i = 0;
+
+            DataTable retDT = new DataTable();
+            retDT = semails.Tables[0];
+            foreach (DataRow sEmail in retDT.Rows)
+            {
+                while (true)
+                {
+
+                        System.Threading.Thread.Sleep(30);
+                        email = sEmail[1].ToString().Replace(" ", "").ToLower();
+                        domain = email.Substring(email.IndexOf("@") + 1);
+                        keyfield = Convert.ToInt32(sEmail[0].ToString());
+                        try
+                        {
+                            domain = email.Substring(email.IndexOf("@") + 1);
+                        }
+                        catch
+                        {
+                            break;
+                        }
+                        if (DomainIsMailable(domain, ssdns, true,keyfield) == false)
+                        {
+                           
+                            break;
+                        }
+                    }
+                
+            }
         }
 
 
